@@ -7,7 +7,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 // --- WEB SERVER ---
 const app = express();
 const PORT = process.env.PORT || 3000;
-app.get('/', (req, res) => res.send('Bot is running with buttons! 🎮'));
+app.get('/', (req, res) => res.send('Bot is running with CYRILLIC transcription! 🇺🇦'));
 app.listen(PORT, () => console.log(`Server on port ${PORT}`));
 
 // --- НАЛАШТУВАННЯ ---
@@ -19,18 +19,18 @@ const DB_FILE = './brain.json';
 const activeSessions = {};
 
 const USER_CONTEXT = `
-Ти вчитель польської мови. Учень: Андрій (33 роки, Świdnica, Польща).
-Інтереси: Full Stack JS, авто Seat Ibiza 2003, син 3.6 роки, побут.
+Ти вчитель польської мови. Учень: Андрій (33 роки, Zgorzelec, Польща).
+Інтереси: Full Stack JS, авто Seat Ibiza 2003, син 3.6 роки.
 Задача: 3 польських слова JSON.
 `;
 
-// 🔥 НАЛАШТУВАННЯ КЛАВІАТУРИ (Меню)
+// НАЛАШТУВАННЯ КЛАВІАТУРИ
 const KEYBOARD = {
     reply_markup: {
         keyboard: [
-            ['▶️ Старт', '🛑 Стоп'] // Два кнопки в ряд
+            ['▶️ Старт', '🛑 Стоп']
         ],
-        resize_keyboard: true // Щоб кнопки не були на пів екрана
+        resize_keyboard: true
     }
 };
 
@@ -48,20 +48,31 @@ function formatMessage(w) {
     return `🇵🇱 **${w.word}** ${w.trans} - ${w.translation}`;
 }
 
-// --- AI ГЕНЕРАЦІЯ ---
+// --- AI ГЕНЕРАЦІЯ (Оновлений промпт) ---
 async function generateWords(usedWords = []) {
     try {
         const ignoreList = usedWords.slice(-50).join(', ');
+        
+        // 🔥 СУВОРИЙ ПРОМПТ 🔥
         const prompt = `${USER_CONTEXT}
-        ЗАВДАННЯ: Згенеруй JSON-масив із 3 нових слів (не використовуй: ${ignoreList}).
-        trans - українська транскрипція.
-        ВАЖЛИВО: Поверни тільки JSON.
-        ФОРМАТ: [{"word": "...", "trans": "[...]", "translation": "..."}]`;
+        ЗАВДАННЯ: Згенеруй JSON-масив із 3 (трьох) нових слів (не використовуй: ${ignoreList}).
+        
+        ВИМОГИ ДО ТРАНСКРИПЦІЇ ("trans"):
+        1. Використовуй ТІЛЬКИ українські літери (Кирилицю).
+        2. ⛔ ЗАБОРОНЕНО писати латиницею (наприклад, [vdro-że-nie] - ЦЕ ПОМИЛКА).
+        3. ✅ ТРЕБА писати кирилицею (наприклад, [вдро-же-нє] - ЦЕ ПРАВИЛЬНО).
+        4. Пиши так, як це слово звучить для українця.
+
+        ФОРМАТ ВІДПОВІДІ (тільки чистий JSON):
+        [{"word": "Słowo", "trans": "[сло-во]", "translation": "Переклад"}]`;
 
         const result = await model.generateContent(prompt);
         const text = result.response.text();
+        
+        // Шукаємо JSON
         const jsonMatch = text.match(/\[[\s\S]*\]/);
         if (!jsonMatch) throw new Error("No JSON found");
+        
         return JSON.parse(jsonMatch[0]);
     } catch (e) {
         console.error("AI Error:", e.message);
@@ -91,7 +102,6 @@ function startDynamicCycle(chatId) {
             const currentWords = currentBrain.users[chatId]?.todayWords;
 
             if (currentWords && currentWords[index]) {
-                // 🔥 Додаємо KEYBOARD, щоб кнопки не зникали
                 bot.sendMessage(chatId, formatMessage(currentWords[index]), KEYBOARD);
             }
 
@@ -122,9 +132,7 @@ function scheduleDailyRefresh(chatId) {
     }, 24 * 60 * 60 * 1000);
 }
 
-// --- КОМАНДИ (Оновлено для кнопок) ---
-
-// 🔥 Тепер реагує на /start АБО на текст "▶️ Старт"
+// --- КОМАНДИ ---
 bot.onText(/\/start|▶️ Старт/, async (msg) => {
     const chatId = msg.chat.id;
     
@@ -133,8 +141,7 @@ bot.onText(/\/start|▶️ Старт/, async (msg) => {
         clearTimeout(activeSessions[chatId].dailyTimer);
     }
     
-    // 🔥 Відправляємо повідомлення РАЗОМ з кнопками (KEYBOARD)
-    bot.sendMessage(chatId, "🚀 Стартуємо! Чекай слова.", KEYBOARD);
+    bot.sendMessage(chatId, "🚀 Стартуємо! (Українська транскрипція)", KEYBOARD);
 
     let brain = loadBrain();
     const newWords = await generateWords(brain.users[chatId]?.usedWords || []);
@@ -154,7 +161,6 @@ bot.onText(/\/start|▶️ Старт/, async (msg) => {
     scheduleDailyRefresh(chatId);
 });
 
-// 🔥 Тепер реагує на /stop АБО на текст "🛑 Стоп"
 bot.onText(/\/stop|🛑 Стоп/, (msg) => {
     const chatId = msg.chat.id;
     const brain = loadBrain();
@@ -170,9 +176,7 @@ bot.onText(/\/stop|🛑 Стоп/, (msg) => {
         delete activeSessions[chatId];
     }
 
-    // 🔥 При зупинці можна приховати клавіатуру або залишити
-    // Я залишаю, щоб зручно було натиснути Старт знову
     bot.sendMessage(chatId, "🛑 Зупинено. Тисни Старт, коли будеш готовий.", KEYBOARD);
 });
 
-console.log('Bot with buttons started...');
+console.log('Bot updated with CYRILLIC prompt...');
