@@ -1,0 +1,32 @@
+{
+  "users": {
+    "384693347": {
+      "isActive": false,
+      "todayWords": [
+        {
+          "word": "Zmienna",
+          "trans": "[змєнна]",
+          "translation": "Змінна (як у програмуванні)"
+        },
+        {
+          "word": "Przegląd",
+          "trans": "[пшеґльонд]",
+          "translation": "Огляд (технічний, медичний)"
+        },
+        {
+          "word": "Hulajnoga",
+          "trans": "[гуляйноґа]",
+          "translation": "Самокат"
+        }
+      ],
+      "usedWords": [
+        "Wdrożenie",
+        "Wymiana",
+        "Kredka",
+        "Zmienna",
+        "Przegląd",
+        "Hulajnoga"
+      ]
+    }
+  }
+}

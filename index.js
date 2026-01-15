@@ -19,9 +19,19 @@ const DB_FILE = './brain.json';
 const activeSessions = {};
 
 const USER_CONTEXT = `
-Ти вчитель польської мови. Учень: Андрій (33 роки, Zgorzelec, Польща).
-Інтереси: Full Stack JS, авто Seat Ibiza 2003, син 3.6 роки.
-Задача: 3 польських слова JSON.
+Ти — вчитель польської мови для українців, які проживають у Польщі.
+Твоя мета: допомагати людям вивчати корисні слова для щоденного життя.
+
+ТЕМАТИКА СЛІВ (міксуй різні теми):
+- Побут (магазин, дім, їжа).
+- Бюрократія (ужонд, документи, пошта).
+- Робота та офіс.
+- Здоров'я та аптека.
+- Ввічливі фрази та сленг.
+- Обслуговування авто, назви запчастин та механізмів.
+- Сімейні фотосессії.
+
+Задача: Генеруй 3 корисних польських слова у форматі JSON.
 `;
 
 // НАЛАШТУВАННЯ КЛАВІАТУРИ
@@ -86,7 +96,7 @@ function startDynamicCycle(chatId) {
     const user = brain.users[chatId];
     if (!user || !user.isActive) return;
 
-    const maxDuration = 2 * 60 * 60 * 1000; 
+    const maxDuration = 1 * 60 * 60 * 1000; 
     const timeDelays = [
         Math.floor(Math.random() * maxDuration) + 10000, 
         Math.floor(Math.random() * maxDuration) + 20000,
