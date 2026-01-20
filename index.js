@@ -96,7 +96,7 @@ function startDynamicCycle(chatId) {
     const user = brain.users[chatId];
     if (!user || !user.isActive) return;
 
-    const maxDuration = 1 * 60 * 60 * 1000; 
+    const maxDuration = 2 * 60 * 60 * 1000; 
     const timeDelays = [
         Math.floor(Math.random() * maxDuration) + 10000, 
         Math.floor(Math.random() * maxDuration) + 20000,
